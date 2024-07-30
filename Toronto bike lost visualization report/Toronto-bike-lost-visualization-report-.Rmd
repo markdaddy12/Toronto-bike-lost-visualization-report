@@ -1,0 +1,276 @@
+---
+output:
+  pdf_document:
+    keep_tex: true
+  html_document: default
+---
+
+\begin{center}
+\begin{minipage}[c][\textheight][c]{\textwidth}
+
+{\LARGE\textbf{\textit{Cycling in the Shadow of Theft:}}\par}
+{\LARGE\textbf{\textit{A Comparative Analysis of Bicycle Theft's Impact on the Cycling Community in Canada, 2017-2022}}\par}
+
+\vspace{0.5cm}{\large\textbf{\textit{Haoying(Jasmine) Wang and Zheng(Mark) Zhang}}\par}
+{\large\textbf{\textit{March 17, 2024}}\par}  
+
+
+\vspace{0.5cm} Have you ever experienced the misfortune of having your bike stolen, or are you worried about being the misfortune one? CTV News in 2022 reports a marked increase in bicycle thefts over the past six years, highlighting a growing dilemma. Indeed, bicycles have surged in popularity as a transportation choice among the eco-conscious, appealing for their economic benefits and the desire for a healthier lifestyle. However, an alarming trend is simultaneously gaining momentum - the rise in bicycle thefts. While it might seem trivial to some, the theft of bicycles inflicts significant losses and disruptions on the cycling community. Toronto, as Canada's most populous city, experiences the highest density of such incidents. However, the impact of this trend on Toronto's cycling community remains unclear. Given Toronto's prominence, it is imperative to investigate whether this upward trend in thefts extends to other cities, such as the capital, Ottawa, or whether it predominantly affects Toronto alone. Moreover, the response of local policies to bike theft is an important part of creating a social environment. As a result, our analysis will focus on the potential factors affected by the trend, including the timing, values, and locations of bike thefts in Toronto from 2017 to 2022. We will compare these factors with those in Ottawa, using data from the Toronto Police Service Public Safety Data Portal and the Ottawa Police Service Public Safety Data Portal. Building on these findings, we will also examine the recovery rates in both cities and evaluate the responses of the local police departments to these incidents, aiming to provide valuable suggestions to organizations like Cycle Toronto. 
+
+\end{minipage}
+\end{center}
+\newpage
+# ***“As the snow falls and the temperatures drop, many cyclists put away their bikes for the season…” -Global News***  
+December and March typically rank third and fourth for the coldest months, suggesting that the typical cyclist may choose to pause their riding around late December and consider resuming sometime between early and mid-March (Cycle Toronto, 2022). Warmer days in a season are the best days to go out for outdoor exercises. People are willing to put on their hamlet and have a ride with their friends and family. Many cycling campaigns are being held in both Toronto and Ottawa. A notable event that typically occurs during the summer months in Toronto and Ottawa is "Bike Month." Bike Month is an annual event held in Toronto and other cities across Ontario, usually in June, to promote cycling as a mode of transportation, recreation, and exercise (City of Toronto, 2022). As cycling events grow in popularity and bicycle use increases, it is intriguing to investigate whether the incidence of bike thefts is also on the rise in both cities. 
+
+```{r, include = FALSE}
+library(lubridate)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r, include= FALSE, error = FALSE, message = FALSE, warning = FALSE}
+toronto_data <- read.csv("Bicycle_Thefts_Open_Data.csv", header = T)
+ottawa_data <- read.csv("Bike_Thefts.csv", header = T)
+
+```
+
+```{r, include= FALSE, error = FALSE, message = FALSE, warning = FALSE}
+toronto_data <- toronto_data %>%
+  mutate(OCC_DATE = as.Date(OCC_DATE)) %>%
+  filter(year(OCC_DATE) >= 2017 & year(OCC_DATE) <= 2022) %>%
+  mutate(Year = year(OCC_DATE), Month = month(OCC_DATE)) %>%
+  group_by(Year, Month) %>%
+  summarise(Counts = n())
+
+ottawa_data <- ottawa_data %>%
+  mutate(Occurrence = as.Date(Occurrence)) %>%
+  filter(year(Occurrence) >= 2017 & year(Occurrence) <= 2022) %>%
+  mutate(Year = year(Occurrence), Month = month(Occurrence)) %>%
+  group_by(Year, Month) %>%
+  summarise(Counts = n())
+```
+
+```{r fig.width=6, fig.height=4, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
+toronto_data$Dataset <- 'Toronto Data'
+ottawa_data$Dataset <- 'Ottawa Data'
+
+combined_data <- rbind(toronto_data, ottawa_data)
+
+combined_data$Date <- as.Date(paste(combined_data$Year, combined_data$Month, "01", sep = "-"))
+combined_data$Month_Name <- month(combined_data$Date, label = TRUE)
+
+ggplot(combined_data, aes(x = Month, y = Counts, group = interaction(Year, Dataset))) +
+  geom_line(aes(color = Dataset)) + 
+  geom_point(aes(color = Dataset)) +
+  geom_smooth(se = FALSE, method = "loess", aes(color = Dataset, fill = Dataset)) +
+  facet_wrap(~Year, scales = "free_y") +
+  scale_x_continuous(breaks = 1:12, labels = month.abb) +
+  scale_color_manual(values = c('Toronto Data' = '#9BC8D9', 'Ottawa Data' = '#C06C84')) +
+  labs(title = "Comparison of Monthly Bike Thefts in Toronto and Ottawa",
+       x = "Month",
+       y = "Number of Thefts",
+       color = "City") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 7), 
+        legend.position = "bottom", 
+        plot.title = element_text(face = "bold", size = 12)) +
+  guides(fill = FALSE)
+
+```
+
+According to the plot, there is a pronounced seasonal pattern in bike thefts, with peaks occurring during the warmer months—specifically between April and August—and a noticeable decline as the colder months set in from September to March, consistently over the six-year span. Toronto, Canada's most populous city, invariably reports higher instances of theft compared to Ottawa, which can be attributed to its greater population density (Filion et al., 2010). However, despite this demographic difference, the theft patterns show remarkable consistency in both cities year after year. The data underscores that bike thefts intensify during the months of April to August in both locales. This suggests that while the magnitude of thefts may vary due to population factors, the seasonal factors influencing bike thefts are comparable in both cities, indicating similar behavioral patterns among bike thieves in Toronto and Ottawa. Upon examining the visualization detailing the bike theft trends in Toronto and Ottawa from 2017 to 2022, it's discernible that thefts surge during specific months for each year, notably in the warmer seasons. However, when data from all six years is combined, it remains to be seen whether the same peak theft months will emerge as significant, or if the aggregation will reveal different patterns, thus providing a more holistic view of bike theft patterns.  
+
+\newpage
+# Seasonal Surge: Dissecting the Peak Months of Bicycle Theft Incidents
+Based on the previous plot, there is evidence that a certain trend exists in both cities. However, identifying the month across six years with the highest number of bike losses is challenging. Analyzing the six-year data as a whole (instead of the analysis for each year) will provide a broader perspective, allowing for the identification of long-term trends and patterns.
+
+
+```{r fig.width=6, fig.height=4, echo = FALSE, message = FALSE, warning = FALSE}
+all_data <- bind_rows(
+  toronto_data %>% mutate(City = "Toronto"),
+  ottawa_data %>% mutate(City = "Ottawa")
+) %>%
+  group_by(City, Month) %>%
+  summarise(Total_Counts = sum(Counts)) %>%
+  ungroup()
+
+
+all_data$Month <- factor(all_data$Month, levels = 1:12, labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
+
+ggplot(all_data, aes(x = Month, y = Total_Counts, fill = City)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("#C06C84", "#9BC8D9")) +
+  theme_minimal() +
+  labs(title = "Total Monthly Bicycle Losses in Toronto and Ottawa",
+       x = "Month",
+       y = "Total Number of Bicycles Lost", color = "Dataset") +
+  theme(legend.position = "bottom",
+        plot.title = element_text(face = "bold", size = 12),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 10))
+
+```
+
+
+The above plot is to address the bicycle thefts in Toronto and Ottawa between 2017 and 2022. This visualization sought to gain insight into how patterns of bike theft incidents in two cities are consistent or different in a given year. Among the months, the number of bike thefts consistently peaks in July over a six-year period, suggesting that the summer holidays, which promote more time for cycling activities, might have an impact in both cities. However, there is a significant difference in the volume of reported bike thefts between the two cities by comparing the height of each bar, with Toronto consistently showing higher numbers of bike  thefts than Ottawa. This could be indicative of the larger population and higher urban density in Toronto (Filion et al., 2010), which may correlate with more bicycles and hence more opportunities for theft. Identifying the peak months for bike thefts is a pivotal step in recognizing and understanding this urban phenomenon, specifically the ‘when’ question. It is also important to identify the specific locations in the city where these thefts are most prevalent, which is the ‘where’ question. Specific locations that are more vulnerable for bike storage are crucial for cycling communities in both cities, making awareness of prevention when parking in those dangerous locations.  
+
+\newpage
+# The Geographic Patterns of Bicycle Theft
+Through observed significant fluctuations and patterns over time through temporal analysis of bicycle theft incidents, we now turn our focus to examining the locations and neighbourhoods where these incidents occur.
+
+```{r fig.width=6, fig.height=4, echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(readr)
+
+bike_thefts_1 <- read_csv("Bicycle_Thefts_Open_Data.csv") %>%
+  filter(OCC_YEAR >= 2017) %>%
+  select(OCC_YEAR, NEIGHBOURHOOD_140, STATUS)
+
+bike_thefts_2 <- read_csv("Bike_Thefts.csv") %>%
+  filter(Year >= 2017) %>%
+  rename(OCC_YEAR = Year, NEIGHBOURHOOD_140 = Ottawa_Nei) %>%
+  select(OCC_YEAR, NEIGHBOURHOOD_140, Bicycle_St)
+
+plot_top_10_neighbourhoods <- function(data, title) {
+  data <- data %>%
+    count(OCC_YEAR, NEIGHBOURHOOD_140) %>%
+    group_by(OCC_YEAR) %>%
+    top_n(n = 10, wt = n) %>%
+    ungroup() %>%
+    complete(OCC_YEAR, NEIGHBOURHOOD_140, fill = list(n = 0))
+  
+  ggplot(data, aes(x = reorder(NEIGHBOURHOOD_140, n), y = factor(OCC_YEAR), fill = n)) +
+    geom_tile(color = "white") +
+    scale_fill_viridis_c(option = "rocket", direction = -1, name = "Theft Count") +
+    labs(title = title, x = "Neighbourhood", y = "Year") +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 7),
+      axis.text.y = element_text(size = 7),
+      plot.title = element_text(hjust = 0.5, face = "bold", size = 12),
+      plot.subtitle = element_text(hjust = 0.5, size = 10),
+      legend.position = "right"
+    ) +
+    coord_flip()
+}
+
+plot_top_10_neighbourhoods(bike_thefts_1, "Top 10 Theft Neighbourhoods per Year (Toronto)")
+plot_top_10_neighbourhoods(bike_thefts_2, "Top 10 Theft Neighbourhoods per Year (Ottawa)")
+```
+
+These two heat maps detail the number of bicycle thefts in Toronto and Ottawa neighbourhoods over six years. These two heat maps visualize the distribution and severity of bicycle thefts in the two cities. The heat map highlights clear trends in burglary activity over time and space. In Toronto, neighborhoods such as Waterfront Communities-The Island and Church-Yonge Corridor have consistently high burglary rates, while Ottawa's Centretown and Sandy Hill have been frequent burglary targets. An important phenomenon we observed was temporal variation; some neighbourhoods had fluctuating burglary patterns, which may be related to changes in population density, urban development, or policing efforts. 
+
+Our examination of the data reveals a concerning concentration of bicycle thefts in the downtown cores of both Toronto and Ottawa. It suggests that while some neighbourhoods bear the brunt of this urban malaise, the reasons extend beyond geography. Factors such as bustling urban activity, insufficient secure parking, and perhaps a lack of community engagement might contribute to these hotspots. Building on our existing analysis, it's essential to recognize that while heatmaps provide a visual snapshot of bicycle theft across neighbourhoods, they do not reflect the socio-economic or cultural factors that may influence these patterns. However, bicycle theft is most prevalent in the city's downtowns, and while researching locations we found that the prevalence of bicycle theft in certain neighbourhoods may be intrinsically linked to the value of bicycles in those areas, suggesting that thieves are targeting certain value of bikes.
+
+# Valuing the Loss: Comparative Value Analysis of Stolen Bicycles 
+Based on the survey conducted by Ottawa police with 60 persons who had been victims of a bike theft, the majority of respondents to the survey indicated that the value of their bicycles ranged between $500 and $1000. A different group of participants stated their bikes were valued at up to $500, while another set mentioned their bicycles were worth over $1500. Inspired by this survey, the trend in the value of bicycles that are frequently stolen becomes an intriguing question to investigate across two cities. 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+toronto_data2 <- read.csv("Bicycle_Thefts_Open_Data.csv", header = T)
+ottawa_data2 <- read.csv("Bike_Thefts.csv", header = T)
+```
+
+```{r fig.width=6, fig.height=4, echo = FALSE, message = FALSE, warning = FALSE}
+toronto_data2 <- toronto_data2 %>%
+  filter(!is.na(BIKE_COST)) %>%
+  filter(OCC_DATE >= as.Date("2017-01-01") & OCC_DATE <= as.Date("2022-12-31")) %>%
+  mutate(Bike_Value = BIKE_COST, City = "Toronto")
+
+
+ottawa_data2 <- ottawa_data2 %>%
+  filter(!is.na(Bicycle_Va)) %>%
+  filter(Occurrence >= as.Date("2017-01-01") & Occurrence <= as.Date("2022-12-31")) %>%
+  mutate(Bike_Value = as.numeric(Bicycle_Va), City = "Ottawa")
+
+all_data <- bind_rows(toronto_data2, ottawa_data2)
+all_data <- all_data %>%
+  filter(Bike_Value <= 4000)
+all_data <- all_data %>%
+  mutate(Year = lubridate::year(coalesce(as.Date(OCC_DATE), as.Date(Occurrence)))) 
+ggplot(all_data, aes(x = City, y = Bike_Value, fill = City)) +
+  geom_violin(adjust = 1, trim = FALSE, alpha = 0.5) +
+  geom_boxplot(width = 0.2, position = position_dodge(width = 0.9), alpha = 0.7) +
+  scale_fill_manual(values = c("Toronto" = "#9BC8D9", "Ottawa" = "#C06C84")) +
+  theme_minimal() +
+  labs(title = "Bicycle Theft Value Trends in Toronto and Ottawa by Year",
+       x = "",
+       y = "Value of Stolen Bicycle (CAD)") +
+  theme(legend.position = "none",
+        strip.background = element_blank(),
+        strip.text = element_text(face = "bold"),
+        plot.title = element_text(face = "bold", size = 12)) 
+
+
+```
+
+Based on the two violin plots with embedded box plots, the distribution of stolen bicycle values in Toronto and Ottawa between the years 2017 and 2022 are compared. The spread of bicycle values is visually represented by the width of the violins. Wider sections indicate a higher frequency of stolen bicycles at that value, giving an impression of the distribution density. The shapes of the violins suggest that while there might be slight variations in frequency at different value levels, the overall patterns do not diverge significantly. The boxplots inside each violin show the median value (the line inside the box), the interquartile range (the box itself), and potential outliers (extreme values). The median values (around 550-600 dollars) of the stolen bikes are much similar across two cities. Both cities display a broad range of values with considerable overlap, suggesting that the markets for stolen bicycles in both locations might share common characteristics in terms of their values. With the significant value lost to bike thefts during commutes in both Toronto and Ottawa, local police departments should be made aware of such issues. It is crucial to investigate the attitude of local law enforcement towards bike theft by examining how they handle each case. This could lead to adjustments in policy or increased vigilance in both cities. One city could learn from the other if it demonstrates effective responsibility for recovery.
+
+# Examining Police Response to Lost Bicycles: How Officers Handle the Issue
+Through the analysis of the stolen bicycle value, the similarity in the value of the bikes stolen from the two cities is important information for police intervention, based on which we analyze the police intervention to recover the bikes
+
+```{r fig.width=6, fig.height=5.5, echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(readr)
+
+bike_thefts_1 <- read_csv("Bicycle_Thefts_Open_Data.csv") %>%
+  rename(YEAR = OCC_YEAR, STATUS = STATUS) %>%
+  mutate(Dataset = "Toronto") %>%
+  filter(!is.na(YEAR), YEAR >= 2017)
+
+bike_thefts_2 <- read_csv("Bike_Thefts.csv") %>%
+  rename(YEAR = Year, STATUS = Bicycle_St) %>%
+  mutate(Dataset = "Ottawa") %>%
+  filter(!is.na(YEAR), YEAR >= 2017)
+
+combined_data <- bind_rows(bike_thefts_1, bike_thefts_2)
+
+recovered_rates <- combined_data %>%
+  group_by(YEAR, Dataset) %>%
+  summarise(
+    Total_Lost = n(),
+    Total_Recovered = sum(STATUS == "RECOVERED", na.rm = TRUE),
+    Recovered_Rate = Total_Recovered / Total_Lost * 100,
+    .groups = 'drop'
+  )
+
+ggplot(recovered_rates, aes(x = YEAR, y = Recovered_Rate, color = Dataset, group = Dataset)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = sprintf("%.2f%%", Recovered_Rate)), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Toronto" = "#9BC8D9", "Ottawa" = "#C06C84")) +
+  labs(title = "Comparison of Bike Recovery Rates Between Datasets", 
+       x = "Year", 
+       y = "Recovered Rate (%)") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom",
+    plot.title = element_text(size = 12, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    plot.caption = element_text(size = 8)
+  ) +
+  guides(color = guide_legend(title = "City"))
+
+
+
+```
+
+This line plot shows a comparison of bicycle recovery rates in Toronto and Ottawa over six years. It reveals gaps and trends in the return of stolen bicycles to their rightful owners in these two cities. We can notice changes in recovery rates - Ottawa's data line is rising, reflecting a somewhat hopeful increase in recovery success, while Toronto's data line remains stubbornly flat and has also seen a significant decline in recent years. The graph observes that in Ottawa, efforts to combat bike theft have begun to bear fruit, with the recovery rate peaking at 6.68% in 2020, followed by a slight decline. In contrast, Toronto's plight is clear, with bicycle theft recovery rates hovering at a low level, dropping to 0.23% by 2022. Compared to the situation in Ottawa, the situation in Toronto is not encouraging. By looking at this data, we see not just a fluctuating picture of bike theft, but a narrative that encompasses policy efficiency, community responsiveness, and perhaps the intrinsic value that each city places on bicycles.
+
+## ***Challenges and Considerations***  
+There are some limitations to our plots that could affect the results. There are a number of individuals who may be unwilling to report thefts due to the low value of their bicycles or the complexity of the reporting process. According to such factors, significant data may go unrecorded in the system. There is also the limitation of temporal coverage where our analysis is computed based on available data from 2017 to 2022, which may not reflect new trends or changes in behavior that have emerged since then. Uncontrollable factors, such as weather, where more bicycles are on the streets during favorable weather conditions, which could lead to higher theft rates simply due to more opportunities for theft. To compensate for research limitations and improve robustness, we can simplify the reporting process, such as fostering the use of websites (529 Garage) to reduce non-reporting and incorporate weather data into theft prediction models through a combination of technological innovation, community engagement, and ongoing data analysis. This both improves the accuracy and relevance of research and provides more reliable insights to stakeholders and policymakers.
+
+## ***Sugguestions and Future Directions***  
+Based on our findings, the increasing trend is observable not only in Toronto but also in Ottawa from 2017 to 2022. The trend decomposes into three factors: time, value, and location of the bicycles. Bike thefts emerge frequently during the summer months, which is July, in both cities. This finding might contribute to the fact that people are more likely to go for outdoor experience or choose their transportation by bike when the weather is warm. Individuals opting for cycling activities during the summer period should exercise heightened vigilance regarding their bike's safety. This includes considering the importance of securely locking up the bike when leaving it unattended. Additionally, our data indicates that bicycles valued between $550 and $600 are particularly vulnerable to theft in both cities. This price range is common for mid-level bicycles, which are abundantly owned and used by the general populace, thereby presenting more opportunities for theft. People who own bikes within this price range might need to invest in high-quality locks or register their bikes on the 529 Garage website. Furthermore, the downtown areas in both cities are identified as theft hotspots, with Toronto and Ottawa showing a significant concentration due to its status as a bustling urban hub. Cyclists who stay in downtown Toronto or downtown Ottawa should be more vigilant and take precautions against theft. To decrease the number of bike thefts in Toronto and across Canada, we suggest Toronto Police Officer need to collect data about the area of aggravated burglary through qualitative insight. Making an appeal to cyclists to ensure the presence of secure bike locks, along with public awareness campaigns and the development and promotion of bike-friendly spaces, are likely to play crucial roles in reducing theft rates. Proactively collecting and acting upon this data and community feedback will be the key strategies to safeguard cyclists' investments and promote a safer cycling environment.
+
+
+\newpage
+## References 
+1. Posted by Cycle Toronto  on  December 21, 2023, et al. “Breaking the Ice.” *Cycle Toronto*, 22 Feb. 2024, www.cycleto.ca/breaking_the_ice.  
+2. Filion, P., Bunting, T., Pavlic, D., & Langlois, P. (2010). Intensification and sprawl: Residential density trajectories in Canada's largest metropolitan regions. *Urban Geography*, 31(4), 541-569.  
+3. Kang, H., Kim, D. H., & Yoo, S. (2019, October 4). *Attributes of perceived bikeability in a compact urban neighborhood based on qualitative multi-methods*. MDPI. https://www.mdpi.com/1660-4601/16/19/3738  
+4. Ottawa. (2023). *Bike thefts*. Open Ottawa. https://open.ottawa.ca/datasets/ottawa::bike-thefts/about  
+5. Amanat, H. (2023, July 5). *Bicycle thefts in Canada Soar by 429 per cent during summer months: Report*. CTVNews. https://www.ctvnews.ca/canada/bicycle-thefts-in-canada-soar-by-429-per-cent-during-summer-months-report-1.6467265 
+
